@@ -5,33 +5,38 @@ import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import { Table } from 'antd';
 import { useDeleteMutation, useGetAllQuery, usePostMutation } from '../../services/productApi';
+import { Input } from 'antd';
 
 
 const AddPage = () => {
     const { data, refetch } = useGetAllQuery();
     const [deleteProduct] = useDeleteMutation();
     const [postProduct] = usePostMutation();
-    const [filtered, setFiltered] = useState(data?.data)
+    const [query, setQuery] = useState("");
 
+    const dataSource = data?.data
+    const [filtered, setFiltered] = useState(dataSource)
 
-    const handleChange = (option) => {
-        const handleChange = (option) => {
-            let sorted;
-            if (option === 'az') {
-                sorted = [...data?.data].sort((a, b) => a.title.localeCompare(b.title));
-            } else if (option === 'za') {
-                sorted = [...data?.data].sort((a, b) => b.title.localeCompare(a.title));
-            } else if (option === '19') {
-                sorted = [...data?.data].sort((a, b) => a.price - b.price);
-            } else if (option === '91') {
-                sorted = [...data?.data].sort((a, b) => b.price - a.price);
-            } else {
-                sorted = [...data?.data];
-            }
-            setFiltered(sorted);
-        };
-        
+    const filteredQuery = data ? data.data.filter((q) => q.title.toLowerCase().trim().includes(query.toLocaleLowerCase().trim())) : []
+
+    function handleChange(option) {
+    
+        let a;
+        if (option === 'az') {
+            a = [...dataSource].sort((a, b) => a.title.localeCompare(b.title));
+        } else if (option === 'za') {
+            a = [...dataSource].sort((a, b) => b.title.localeCompare(a.title));
+        } else if (option === '19') {
+            a = [...dataSource].sort((a, b) => a.price - b.price);
+        } else if (option === '91') {
+            a = [...dataSource].sort((a, b) => b.price - a.price);
+        }
+        setFiltered(a)
     }
+
+
+
+
 
     const SignupSchema = Yup.object().shape({
         title: Yup.string()
@@ -46,7 +51,7 @@ const AddPage = () => {
     const formik = useFormik({
         initialValues: {
             title: '',
-            price:'',
+            price: '',
             image: '',
             description: '',
         },
@@ -159,21 +164,28 @@ const AddPage = () => {
 
                 <Button type="submit" color='error' variant="outlined">Add Product</Button>
             </form>
-            <select onChange={(e) => handleChange(e.target.value)} style={{ marginTop: '30px' }}>
-                <option defaultValue>Select Option</option>
-                <option value="az">A-Z</option>
-                <option value="za">Z-A</option>
-                <option value="19">Low to High</option>
-                <option value="91">High to Low</option>
-            </select>
+            <div>
+                <select onChange={(e) => handleChange(e.target.value)}>
+                    <option defaultValue>Select option</option>
+                    <option value={"az"}>A - Z</option>
+                    <option value={"za"}>Z - A</option>
+                    <option value={"19"}>Low to High</option>
+                    <option value={"91"}>High to Low</option>
+                </select>
+
+                <Input placeholder="...Search" value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                />
+            </div>
             <Table
                 columns={columns}
-                dataSource={data?.data || filtered}
+                dataSource={filtered || filteredQuery}
                 onChange={onChange}
                 showSorterTooltip={{
                     target: 'sorter-icon',
                 }}
                 style={{ paddingTop: '20px' }}
+                rowKey={'_id'}
             />
         </div>
     );

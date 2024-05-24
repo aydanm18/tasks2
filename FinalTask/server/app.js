@@ -11,7 +11,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 const ProductSchema = new mongoose.Schema({
     title: String,
-    price:Number,
+    price: Number,
     image: String,
     description: String
 })
@@ -19,7 +19,7 @@ const ProductModel = mongoose.model('Product', ProductSchema)
 app.get('/products', async (req, res) => {
     try {
         const products = await ProductModel.find({})
-        if (products) {
+        if (products.length > 0) {
             res.send({
                 message: 'success',
                 data: products
@@ -80,7 +80,7 @@ app.delete('/products/:id', async (req, res) => {
 })
 
 app.post('/products', async (req, res) => {
-    
+
     const newProduct = new ProductModel(req.body)
     await newProduct.save()
     res.send({
